@@ -139,6 +139,50 @@ class _NoteEditorState extends State<NoteEditor> {
     }
   }
 
+  void _showOptionsBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Container(
+          child: Wrap( 
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.delete, color: Colors.red),
+                title: Text(
+                  'Xóa ghi chú',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.pop(context); 
+                  _noteProvider?.deleteNote(_noteId!); 
+                  Navigator.pop(context); 
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.share),
+                title: Text('Chia sẻ'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Gọi hàm xử lý chia sẻ... (chưa triển khai)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Chức năng đang phát triển!')),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.cancel),
+                title: Text('Hủy bỏ'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -158,10 +202,13 @@ class _NoteEditorState extends State<NoteEditor> {
         appBar: AppBar(
           title: Text(widget.note != null ? 'Chỉnh sửa Ghi chú' : 'Ghi chú mới'),
           actions: [
-            // IconButton(
-            //   icon: Icon(Icons.save),
-            //   onPressed: _saveNote,
-            // ),
+            if (_isEditing) 
+              IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: () {
+                  _showOptionsBottomSheet(context);
+                },
+              ),
           ],
         ),
         body: SafeArea(
@@ -195,7 +242,7 @@ class _NoteEditorState extends State<NoteEditor> {
                 child: QuillEditor(
                   focusNode: _editorFocusNode,
                   scrollController: _editorScrollController,
-                  controller: _controller, // Đã được khởi tạo trong initState
+                  controller: _controller,
                   config: QuillEditorConfig(
                     padding: const EdgeInsets.all(16),
                     embedBuilders: [
@@ -214,7 +261,7 @@ class _NoteEditorState extends State<NoteEditor> {
                           },
                         ),
                       ),
-                      // Sử dụng builder đã được import từ file embeds.dart
+                      
                       TimeStampEmbedBuilder(),
                     ],
                   ),
@@ -225,12 +272,10 @@ class _NoteEditorState extends State<NoteEditor> {
                 thickness: 1,
                 color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
               ),
-              CustomToolbar(
-                controller: _controller,
-              ),
             ],
           ),
         ),
+        bottomNavigationBar: CustomToolbar(controller: _controller),
       )
     );
   }

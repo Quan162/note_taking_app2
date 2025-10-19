@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         FlutterQuillLocalizations.delegate,
       ],
-
+      themeMode: themeProvider.themeMode,
       home: const HomeScreen(),
     );
   }
