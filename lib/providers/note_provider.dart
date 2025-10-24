@@ -1,46 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import 'package:note_taking_app/models/note.dart';
+import 'package:note_taking_app/repositories/note_repository.dart';
 
 class NoteProvider extends ChangeNotifier {
-  final List<Note> _notes = [];
+  final NoteRepository _noteRepository = NoteRepository();
+  
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
+  List<Note> _notes = [];
   List<Note> get notes => [..._notes];
 
-  String addNote(String title, String content) {
-    final idNote = DateTime.now().millisecondsSinceEpoch.toString();
+  Future<void> loadNotes() async {
+    _isLoading = true;
+    notifyListeners();
+    
+    _notes = await _noteRepository.getAllNotes();
+    
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<String> addNote(String title, String content) async{
+    final idNote = Uuid().v4();
     final newNote = Note(
       id: idNote,
       title: title.trim(),
       content: content.trim(),
-      modifiedAt: DateTime.now()
+      modifiedAt: DateTime.now(),
+      createdAt: DateTime.now()
     );
 
-    _notes.add(newNote);
+    await _noteRepository.saveNote(newNote); 
+
+    _notes.insert(0, newNote);
     notifyListeners();
     return idNote;
   }
 
-  void deleteNote(String id) {
+  Future<void> deleteNote(String id) async{
+    await _noteRepository.deleteNote(id);
+
     _notes.removeWhere((note) => note.id == id);
     notifyListeners(); 
   }
 
-  void updateNote(String id, String newTitle, String newContent) {
-      // Tìm vị trí (index) của ghi chú cũ
-      final index = _notes.indexWhere((note) => note.id == id);
+  Future<void> updateNote(String id, String newTitle, String newContent) async {
+    final index = _notes.indexWhere((note) => note.id == id);
+      
+    if (index != -1) {
+      final originalNote = _notes[index];
+      
+      final updatedNote = originalNote.copyWith(
+        title: newTitle.trim().isEmpty ? 'Untitled' : newTitle.trim(),
+        content: newContent.trim(),
+        modifiedAt: DateTime.now(),
+      );
+      
+      await _noteRepository.saveNote(updatedNote);
 
-      if (index != -1) {
-        final updatedNote = Note(
-          id: id,
-          title: newTitle,
-          content: newContent,
-          modifiedAt: DateTime.now()
-        );
-        
-        _notes[index] = updatedNote;
-        notifyListeners();
-      }
+      _notes.removeAt(index);
+      _notes.insert(0, updatedNote);
+      
+      notifyListeners();
     }
+  }
 
   List<Note> searchNotes(String query) {
     if (query.isEmpty) {

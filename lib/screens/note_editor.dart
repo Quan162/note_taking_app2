@@ -272,10 +272,13 @@ class _NoteEditorState extends State<NoteEditor> {
                 thickness: 1,
                 color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
               ),
+              
             ],
           ),
         ),
-        bottomNavigationBar: CustomToolbar(controller: _controller),
+        bottomNavigationBar: SafeArea(
+          child: CustomToolbar(controller: _controller),
+        ),
       )
     );
   }

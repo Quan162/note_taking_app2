@@ -23,6 +23,16 @@ class _HomeScreenState extends State<HomeScreen>{
   late TextTheme tt;
   
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // listen: false là bắt buộc khi gọi trong initState
+      Provider.of<NoteProvider>(context, listen: false).loadNotes();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     tt = Theme.of(context).textTheme;
     cs = Theme.of(context).colorScheme;
@@ -81,6 +91,12 @@ class _HomeScreenState extends State<HomeScreen>{
 
   Widget _buildNoteList(BuildContext context, ColorScheme cs) {
     final noteProvider = Provider.of<NoteProvider>(context);
+
+    if (noteProvider.isLoading) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
     if (noteProvider.notes.isEmpty) {
       // Trạng thái Rỗng
@@ -165,7 +181,6 @@ class _HomeScreenState extends State<HomeScreen>{
           context,
           MaterialPageRoute(builder: (context) => const NoteEditor()),
         );
-
       }
     );
   }
