@@ -1,22 +1,10 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io' as io show Directory, File;
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:note_taking_app/models/note.dart';
 import 'package:note_taking_app/providers/note_provider.dart';
-import 'package:note_taking_app/utils/embeds.dart';
-import 'package:note_taking_app/widgets/custom_toobar.dart';
-import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 
 class NoteEditor extends StatefulWidget {
-  final Note? note;
-
-  const NoteEditor({super.key, this.note});
+  const NoteEditor({super.key});
 
   @override
   State<NoteEditor> createState() => _NoteEditorState();
@@ -24,273 +12,212 @@ class NoteEditor extends StatefulWidget {
 
 class _NoteEditorState extends State<NoteEditor> {
   final TextEditingController _titleController = TextEditingController();
-  late QuillController _controller;
-  final FocusNode _editorFocusNode = FocusNode();
-  final ScrollController _editorScrollController = ScrollController();
-
+  final TextEditingController _contentController = TextEditingController();
+  
+  bool _isEditing = false;
   String? _noteId;
-  NoteProvider? _noteProvider;
-  Timer? _debounceTimer;
-
-  bool get _isEditing => _noteId != null;
-
-  @override
-  void initState() {
-    super.initState();
-    _noteId = widget.note?.id;
-    _titleController.text = widget.note?.title ?? '';
-
-    Document initialDocument;
-    if (widget.note != null && widget.note!.content.isNotEmpty) {
-      try {
-        final decodedContent = jsonDecode(widget.note!.content) as List;
-        initialDocument = Document.fromJson(decodedContent);
-      } catch (e) {
-        print('Lỗi giải mã nội dung note: $e. Tạo document rỗng.');
-        initialDocument = Document();
-      }
-    } else {
-      initialDocument = Document();
-    }
-
-    final config = QuillControllerConfig(
-      clipboardConfig: QuillClipboardConfig(
-        enableExternalRichPaste: true,
-        onImagePaste: (imageBytes) async {
-          if (kIsWeb) {
-            return null;
-          }
-          final newFileName =
-              'image-file-${DateTime.now().toIso8601String()}.png';
-          final newPath = path.join(
-            io.Directory.systemTemp.path,
-            newFileName,
-          );
-          final file = await io.File(
-            newPath,
-          ).writeAsBytes(imageBytes, flush: true);
-          return file.path;
-        },
-      ),
-    );
-
-    _controller = QuillController(
-      document: initialDocument,
-      selection: const TextSelection.collapsed(offset: 0),
-      config: config,
-    );
-    
-    _titleController.addListener(_onTextChanged);
-    _controller.document.changes.listen((_) => _onContentChanged());
-  }
+  bool _initialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _noteProvider = Provider.of<NoteProvider>(context, listen: false);
-  }
-
-  void _onTextChanged() {
-    _startDebounce();
-  }
-
-  void _onContentChanged() {
-    _startDebounce();
-  }
-
-  void _startDebounce() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 1500), _saveNote);
+    
+    if (!_initialized) {
+      final note = ModalRoute.of(context)?.settings.arguments as Note?;
+      
+      if (note != null) {
+        _isEditing = true;
+        _noteId = note.id;
+        _titleController.text = note.title;
+        _contentController.text = note.content;
+      } else {
+        _isEditing = false;
+      }
+      
+      _initialized = true;
+    }
   }
 
   Future<void> _saveNote() async {
-    if (_noteProvider == null) {
-      print("Provider chưa sẵn sàng, không thể lưu");
-      _startDebounce();
-      return;
-    }
+    final noteProvider = Provider.of<NoteProvider>(context, listen: false);
+    
+    final title = _titleController.text.trim();
+    final content = _contentController.text.trim();
 
-    final title = _titleController.text;
-    final contentJson = _controller.document.toDelta().toJson();
-    final content = jsonEncode(contentJson);
-
-    final isContentEmpty = contentJson.isEmpty ||
-        (contentJson.length == 1 &&
-            contentJson[0].containsKey('insert') &&
-            contentJson[0]['insert'] == '\n');
-
-    if (!_isEditing && title.isEmpty && isContentEmpty) {
-      print("Note mới rỗng, không lưu.");
+    // Không lưu note rỗng
+    if (title.isEmpty && content.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ghi chú không thể để trống')),
+      );
       return;
     }
 
     try {
       if (_isEditing) {
-        _noteProvider!.updateNote(_noteId!, title, content);
+        // Update note hiện tại
+        await noteProvider.updateNote(_noteId!, title, content);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Đã cập nhật ghi chú')),
+          );
+        }
       } else {
-        final noteId = await _noteProvider!.addNote(title, content);
-        
+        // Thêm note mới
+        final noteId = await noteProvider.addNote(title, content);
         setState(() {
           _noteId = noteId;
+          _isEditing = true;
         });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Đã lưu ghi chú mới')),
+          );
+        }
       }
     } catch (e) {
-      print("Lỗi khi lưu note: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi lưu: $e')),
+        );
+      }
     }
   }
 
-  void _showOptionsBottomSheet(BuildContext context) {
+  Future<void> _deleteNote() async {
+    if (!_isEditing) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xác nhận xóa'),
+        content: const Text('Bạn có chắc muốn xóa ghi chú này?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      final noteProvider = Provider.of<NoteProvider>(context, listen: false);
+      await noteProvider.deleteNote(_noteId!);
+      
+      if (mounted) {
+        Navigator.pop(context); // Quay lại màn hình danh sách
+      }
+    }
+  }
+
+  void _showOptionsMenu() {
     showModalBottomSheet(
       context: context,
-      builder: (BuildContext bc) {
-        return Container(
-          child: Wrap( 
-            children: <Widget>[
-              ListTile(
-                leading: Icon(Icons.delete, color: Colors.red),
-                title: Text(
-                  'Xóa ghi chú',
-                  style: TextStyle(color: Colors.red),
-                ),
-                onTap: () {
-                  Navigator.pop(context); 
-                  _noteProvider?.deleteNote(_noteId!); 
-                  Navigator.pop(context); 
-                },
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text(
+                'Xóa ghi chú',
+                style: TextStyle(color: Colors.red),
               ),
-              ListTile(
-                leading: Icon(Icons.share),
-                title: Text('Chia sẻ'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Gọi hàm xử lý chia sẻ... (chưa triển khai)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Chức năng đang phát triển!')),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.cancel),
-                title: Text('Hủy bỏ'),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
+              onTap: () {
+                Navigator.pop(context);
+                _deleteNote();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Chia sẻ'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Chức năng đang phát triển')),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-    
-      onPopInvokedWithResult: (bool didPop, Object? result) async {
-        if (didPop) {
-          return;
-        }
-        _debounceTimer?.cancel();
-        _saveNote();
-        if (context.mounted) {
-          Navigator.pop(context);
-        }
-      },
-      child:  Scaffold(
-        appBar: AppBar(
-          title: Text(widget.note != null ? 'Chỉnh sửa Ghi chú' : 'Ghi chú mới'),
-          actions: [
-            if (_isEditing) 
-              IconButton(
-                icon: const Icon(Icons.more_vert),
-                onPressed: () {
-                  _showOptionsBottomSheet(context);
-                },
-              ),
-          ],
-        ),
-        body: SafeArea(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Chỉnh sửa ghi chú' : 'Ghi chú mới'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _saveNote,
+            tooltip: 'Lưu',
+          ),
+          if (_isEditing)
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: _showOptionsMenu,
+              tooltip: 'Tùy chọn',
+            ),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              Padding(
-                  padding: EdgeInsetsGeometry.all(16),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _titleController,
-                        autofocus: widget.note == null,
-                        decoration: const InputDecoration(
-                          hintText: 'Tiêu đề',
-                          border: InputBorder.none,
-                        ),
-                        style: Theme.of(context).textTheme.headlineSmall,
-                        textCapitalization: TextCapitalization.sentences,
-                        onSubmitted: (_) {
-                          FocusScope.of(context).requestFocus(_editorFocusNode);
-                        },
-                      ),
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-                      ),
-                    ],
-                  )),
-              Expanded(
-                child: QuillEditor(
-                  focusNode: _editorFocusNode,
-                  scrollController: _editorScrollController,
-                  controller: _controller,
-                  config: QuillEditorConfig(
-                    padding: const EdgeInsets.all(16),
-                    embedBuilders: [
-                      ...FlutterQuillEmbeds.editorBuilders(
-                        imageEmbedConfig: QuillEditorImageEmbedConfig(
-                          imageProviderBuilder: (context, imageUrl) {
-                            if (imageUrl.startsWith('assets/')) {
-                              return AssetImage(imageUrl);
-                            }
-                            return null;
-                          },
-                        ),
-                        videoEmbedConfig: QuillEditorVideoEmbedConfig(
-                          customVideoBuilder: (videoUrl, readOnly) {
-                            return null;
-                          },
-                        ),
-                      ),
-                      
-                      TimeStampEmbedBuilder(),
-                    ],
-                  ),
+              // TextField cho tiêu đề
+              TextField(
+                controller: _titleController,
+                autofocus: !_isEditing, // Auto focus khi tạo mới
+                decoration: const InputDecoration(
+                  hintText: 'Tiêu đề',
+                  border: InputBorder.none,
                 ),
+                style: Theme.of(context).textTheme.headlineSmall,
+                textCapitalization: TextCapitalization.sentences,
               ),
+              
               Divider(
                 height: 1,
                 thickness: 1,
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                color: Theme.of(context).dividerColor.withOpacity(0.5),
               ),
               
+              const SizedBox(height: 16),
+              
+              // TextField cho nội dung
+              Expanded(
+                child: TextField(
+                  controller: _contentController,
+                  decoration: const InputDecoration(
+                    hintText: 'Nội dung ghi chú...',
+                    border: InputBorder.none,
+                  ),
+                  maxLines: null, // Cho phép nhiều dòng
+                  expands: true, // Mở rộng để lấp đầy không gian
+                  textAlignVertical: TextAlignVertical.top,
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+              ),
             ],
           ),
         ),
-        bottomNavigationBar: SafeArea(
-          child: CustomToolbar(controller: _controller),
-        ),
-      )
+      ),
     );
   }
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
-    _titleController.removeListener(_onTextChanged);
-    _controller.dispose();
-    _editorScrollController.dispose();
-    _editorFocusNode.dispose();
     _titleController.dispose();
+    _contentController.dispose();
     super.dispose();
   }
 }

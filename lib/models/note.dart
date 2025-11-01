@@ -17,7 +17,31 @@ class Note {
     this.isFavorite = false,
   });
 
+  // Chuyển đổi từ Map (dữ liệu đọc từ DB/JSON) sang object Note
+  factory Note.fromMap(Map<String, dynamic> json) {
+    return Note(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      content: json['content'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      modifiedAt: DateTime.parse(json['modifiedAt'] as String),
+      isFavorite: (json['isFavorite'] as int? ?? 0) == 1,    
+    );
+  }
 
+  // Chuyển đổi từ object Note sang Map (để ghi vào DB/JSON)
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'content': content,
+      'createdAt': createdAt.toIso8601String(),
+      'modifiedAt': modifiedAt.toIso8601String(),
+      'isFavorite': isFavorite ? 1 : 0,
+    };
+  }
+
+  
   Note copyWith({
     String? id,
     String? title,
@@ -35,29 +59,5 @@ class Note {
       modifiedAt: modifiedAt ?? this.modifiedAt,
       isFavorite: isFavorite ?? this.isFavorite,
     );
-  }
-
-  // Chuyển đổi từ Map (dữ liệu đọc từ DB/JSON) sang object Note
-  factory Note.fromJson(Map<String, dynamic> json) {
-    return Note(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      content: json['content'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      modifiedAt: DateTime.parse(json['modifiedAt'] as String),
-      isFavorite: (json['isFavorite'] as int? ?? 0) == 1,    
-    );
-  }
-
-  // Chuyển đổi từ object Note sang Map (để ghi vào DB/JSON)
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'content': content,
-      'createdAt': createdAt.toIso8601String(),
-      'modifiedAt': modifiedAt.toIso8601String(),
-      'isFavorite': isFavorite ? 1 : 0,
-    };
   }
 }

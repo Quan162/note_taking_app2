@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:note_taking_app/models/note.dart';
 import 'package:note_taking_app/providers/note_provider.dart';
-import 'package:note_taking_app/screens/note_editor.dart';
+import 'package:note_taking_app/screens/note_editor_rich.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:note_taking_app/screens/search.dart';
 import 'package:note_taking_app/widgets/drawer.dart';
@@ -178,9 +178,9 @@ class _HomeScreenState extends State<HomeScreen>{
       label: Text("Thêm ghi chú mới"),
       icon: Icon(Icons.add),
       onPressed: () {
-        Navigator.push(
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(builder: (context) => const NoteEditor()),
+          '/editor',
         );
       }
     );

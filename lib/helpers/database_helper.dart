@@ -40,7 +40,6 @@ class DatabaseHelper {
 
   // --- Các hàm CRUD cơ bản ---
 
-  /// Chèn hoặc Cập nhật (Upsert)
   /// Dùng ConflictAlgorithm.replace để nếu 'id' đã tồn tại, nó sẽ thay thế
   Future<int> insertOrUpdate(String table, Map<String, dynamic> row) async {
     final db = await database;
@@ -51,13 +50,11 @@ class DatabaseHelper {
     );
   }
 
-  /// Lấy tất cả các dòng
   Future<List<Map<String, dynamic>>> getAll(String table, {String? orderBy}) async {
     final db = await database;
     return await db.query(table, orderBy: orderBy);
   }
 
-  /// Lấy một dòng theo ID
   Future<Map<String, dynamic>?> getById(String table, String id) async {
     final db = await database;
     List<Map<String, dynamic>> maps = await db.query(
@@ -72,7 +69,6 @@ class DatabaseHelper {
     return null;
   }
 
-  /// Xóa một dòng theo ID
   Future<int> delete(String table, String id) async {
     final db = await database;
     return await db.delete(

@@ -4,26 +4,19 @@ import 'package:note_taking_app/models/note.dart';
 import 'package:note_taking_app/repositories/note_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Đảm bảo NoteRepository là abstract class (lớp trừu tượng)
-// và bạn đang 'implements' (triển khai) nó, không phải 'extends'.
 class WebNoteRepository implements NoteRepository {
-  // Bỏ dấu '?' vì 'required' đảm bảo nó không bao giờ null
   final SharedPreferences prefs;
   
   WebNoteRepository({required this.prefs});
 
-  // Key hằng số cho danh sách index
   static const String _kNoteIndexKey = 'note_index_v1';
   
-  // Helper để tạo key cho từng ghi chú
   String _noteKey(String id) => 'note_item_$id';
 
-  // Helper lấy danh sách ID
   List<String> _getNoteIndex() {
     return prefs.getStringList(_kNoteIndexKey) ?? [];
   }
   
-  // Helper lưu danh sách ID
   Future<void> _saveNoteIndex(List<String> index) async {
     await prefs.setStringList(_kNoteIndexKey, index);
   }
@@ -37,17 +30,14 @@ class WebNoteRepository implements NoteRepository {
       final String? noteJson = prefs.getString(_noteKey(id));
       if (noteJson != null) {
         try {
-          // Decode chuỗi JSON thành Map, rồi tạo đối tượng Note
           final Map<String, dynamic> noteMap = jsonDecode(noteJson) as Map<String, dynamic>;
-          notes.add(Note.fromJson(noteMap));
+          notes.add(Note.fromMap(noteMap));
         } catch (e) {
           debugPrint("Lỗi giải mã (decode) ghi chú $id: $e");
-          // Có thể thêm logic xóa ID hỏng khỏi index ở đây
-        }
+          }
       }
     }
     
-    // Sắp xếp theo ngày sửa đổi, mới nhất lên đầu (Tùy chọn)
     notes.sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
     
     return notes;
@@ -63,7 +53,7 @@ class WebNoteRepository implements NoteRepository {
 
     try {
       final Map<String, dynamic> noteMap = jsonDecode(noteJson) as Map<String, dynamic>;
-      return Note.fromJson(noteMap);
+      return Note.fromMap(noteMap);
     } catch (e) {
       debugPrint("Lỗi giải mã (decode) ghi chú $id: $e");
       return null;
@@ -72,8 +62,7 @@ class WebNoteRepository implements NoteRepository {
 
   @override
   Future<void> saveNote(Note note) async {
-    // 1. Chuyển Note thành Map rồi thành chuỗi JSON
-    final Map<String, dynamic> noteMap = note.toJson();
+    final Map<String, dynamic> noteMap = note.toMap();
     final String noteJson = jsonEncode(noteMap);
 
     // 2. Lưu ghi chú bằng key riêng của nó
@@ -89,10 +78,8 @@ class WebNoteRepository implements NoteRepository {
 
   @override
   Future<void> deleteNote(String id) async {
-    // 1. Xóa ghi chú
     await prefs.remove(_noteKey(id));
 
-    // 2. Xóa ID khỏi index
     final List<String> index = _getNoteIndex();
     if (index.contains(id)) {
       index.remove(id);

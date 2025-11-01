@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'dart:convert'; // <- Không cần thiết
-// import 'package:flutter_quill/flutter_quill.dart'; // <- Không cần thiết
-// import 'package:flutter_quill/quill_delta.dart'; // <- Không cần thiết
 import 'package:note_taking_app/models/note.dart';
 import 'package:note_taking_app/providers/note_provider.dart';
-import 'package:note_taking_app/screens/note_editor.dart';
 import 'package:provider/provider.dart';
 
 class NoteListItem extends StatelessWidget {
@@ -67,9 +63,10 @@ class NoteListItem extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () {
-            Navigator.push(
+            Navigator.pushNamed(
               context,
-              MaterialPageRoute(builder: (context) => NoteEditor(note: note)),
+              '/editor',
+              arguments: note, // Truyền object Note qua arguments
             );
           },
           child: Padding(
