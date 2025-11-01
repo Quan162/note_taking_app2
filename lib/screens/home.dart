@@ -7,6 +7,7 @@ import 'package:note_taking_app/screens/note_editor.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:note_taking_app/screens/search.dart';
 import 'package:note_taking_app/widgets/drawer.dart';
+import 'package:note_taking_app/widgets/home/note_list.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -27,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen>{
     // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // listen: false là bắt buộc khi gọi trong initState
+      // listen: false là bắt buộc khi gọi troFng initState
       Provider.of<NoteProvider>(context, listen: false).loadNotes();
     });
   }
@@ -40,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen>{
     return Scaffold(
       drawer: AppDrawer(),
       appBar: _buildAppBar(),
-      body: _buildNoteList(context, cs),
+      body: const NoteList(),
       floatingActionButton: _buildFAB()
     ); 
   }
@@ -89,88 +90,88 @@ class _HomeScreenState extends State<HomeScreen>{
     );
   }
 
-  Widget _buildNoteList(BuildContext context, ColorScheme cs) {
-    final noteProvider = Provider.of<NoteProvider>(context);
+  // Widget _buildNoteList(BuildContext context, ColorScheme cs) {
+  //   final noteProvider = Provider.of<NoteProvider>(context);
 
-    if (noteProvider.isLoading) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+  //   if (noteProvider.isLoading) {
+  //     return Center(
+  //       child: CircularProgressIndicator(),
+  //     );
+  //   }
 
-    if (noteProvider.notes.isEmpty) {
-      // Trạng thái Rỗng
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.lightbulb_outline, size: 64, color: cs.onSurfaceVariant),
-            const SizedBox(height: 16),
-            Text(
-              "Ghi chú của bạn trống",
-              style: TextStyle(fontSize: 18, color: cs.onSurfaceVariant),
-            ),
-          ],
-        ),
-      );
-    }
+  //   if (noteProvider.notes.isEmpty) {
+  //     // Trạng thái Rỗng
+  //     return Center(
+  //       child: Column(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           Icon(Icons.lightbulb_outline, size: 64, color: cs.onSurfaceVariant),
+  //           const SizedBox(height: 16),
+  //           Text(
+  //             "Ghi chú của bạn trống",
+  //             style: TextStyle(fontSize: 18, color: cs.onSurfaceVariant),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16), 
-      itemCount: noteProvider.notes.length,
-      itemBuilder: (context, index) {
-        final Note note = noteProvider.notes[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8.0),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) =>  NoteEditor(note: note)),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    note.title.isEmpty ? "Không có tiêu đề" : note.title,
-                    style: tt.titleLarge,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        _formatDateTime(note.modifiedAt),
-                        style: tt.bodyMedium?.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _getPlainText(note.content),
-                          style: tt.bodyMedium?.copyWith(
-                                color: cs.onSurfaceVariant,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      )
-                    ],
-                  )
-                ],
-              ),
-            ),
-          )
-        );
-      },
-    );
-  }
+  //   return ListView.builder(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16), 
+  //     itemCount: noteProvider.notes.length,
+  //     itemBuilder: (context, index) {
+  //       final Note note = noteProvider.notes[index];
+  //       return Card(
+  //         margin: const EdgeInsets.symmetric(vertical: 8.0),
+  //         clipBehavior: Clip.antiAlias,
+  //         child: InkWell(
+  //           onTap: () {
+  //             Navigator.push(
+  //               context,
+  //               MaterialPageRoute(builder: (context) =>  NoteEditor(note: note)),
+  //             );
+  //           },
+  //           child: Padding(
+  //             padding: const EdgeInsets.all(16.0),
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   note.title.isEmpty ? "Không có tiêu đề" : note.title,
+  //                   style: tt.titleLarge,
+  //                   maxLines: 1,
+  //                   overflow: TextOverflow.ellipsis,
+  //                 ),
+  //                 const SizedBox(height: 8),
+  //                 Row(
+  //                   children: [
+  //                     Text(
+  //                       _formatDateTime(note.modifiedAt),
+  //                       style: tt.bodyMedium?.copyWith(
+  //                             color: cs.onSurfaceVariant,
+  //                           ),
+  //                     ),
+  //                     const SizedBox(width: 8),
+  //                     Expanded(
+  //                       child: Text(
+  //                         _getPlainText(note.content),
+  //                         style: tt.bodyMedium?.copyWith(
+  //                               color: cs.onSurfaceVariant,
+  //                             ),
+  //                         maxLines: 1,
+  //                         overflow: TextOverflow.ellipsis,
+  //                       )
+  //                     )
+  //                   ],
+  //                 )
+  //               ],
+  //             ),
+  //           ),
+  //         )
+  //       );
+  //     },
+  //   );
+  // }
 
   FloatingActionButton _buildFAB() {
     return FloatingActionButton.extended(
@@ -185,29 +186,4 @@ class _HomeScreenState extends State<HomeScreen>{
     );
   }
 
-  String _formatDateTime(DateTime dt) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final noteDate = DateTime(dt.year, dt.month, dt.day);
-
-    if (today == noteDate) {
-      return DateFormat('HH:mm').format(dt);
-    } else {
-      return DateFormat('dd/MM/yyyy').format(dt);
-    }
-  }
-
-  String _getPlainText(String jsonContent) {
-    if (jsonContent.isEmpty) {
-      return "Nội dung trống";
-    }
-    try {
-      final decoded = jsonDecode(jsonContent) as List;
-      final doc = Document.fromJson(decoded);
-      return doc.toPlainText().trim().replaceAll('\n', ' ');
-    } catch (e) {
-      print("Lỗi parse nội dung note: $e");
-      return "[Nội dung bị lỗi]";
-    }
-  }
 }

@@ -1,19 +1,34 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:note_taking_app/providers/note_provider.dart';
 import 'package:note_taking_app/providers/theme_provider.dart';
+import 'package:note_taking_app/repositories/note_repository.dart';
+import 'package:note_taking_app/repositories/sqlite_note_repository.dart';
+import 'package:note_taking_app/repositories/web_note_repository.dart';
 import 'package:note_taking_app/screens/home.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final NoteRepository noteRepository;
+
+  // if (kIsWeb) {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   noteRepository = WebNoteRepository(prefs: prefs);
+  // } else {
+  //   noteRepository = SqliteNoteRepository();
+  // }
+  noteRepository = SqliteNoteRepository();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => NoteProvider(), 
+          create: (context) => NoteProvider(noteRepository: noteRepository), 
         ),
         ChangeNotifierProvider(
           create: (context) => ThemeProvider(), 

@@ -1,22 +1,28 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:intl/intl.dart';
+import 'package:note_taking_app/repositories/note_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:note_taking_app/models/note.dart';
-import 'package:note_taking_app/repositories/note_repository.dart';
 
 class NoteProvider extends ChangeNotifier {
-  final NoteRepository _noteRepository = NoteRepository();
+  final NoteRepository noteRepository;
   
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
   List<Note> _notes = [];
+
+  NoteProvider({required this.noteRepository});
   List<Note> get notes => [..._notes];
 
   Future<void> loadNotes() async {
     _isLoading = true;
     notifyListeners();
     
-    _notes = await _noteRepository.getAllNotes();
+    _notes = await noteRepository.getAllNotes();
     
     _isLoading = false;
     notifyListeners();
@@ -32,7 +38,7 @@ class NoteProvider extends ChangeNotifier {
       createdAt: DateTime.now()
     );
 
-    await _noteRepository.saveNote(newNote); 
+    await noteRepository.saveNote(newNote); 
 
     _notes.insert(0, newNote);
     notifyListeners();
@@ -40,7 +46,7 @@ class NoteProvider extends ChangeNotifier {
   }
 
   Future<void> deleteNote(String id) async{
-    await _noteRepository.deleteNote(id);
+    await noteRepository.deleteNote(id);
 
     _notes.removeWhere((note) => note.id == id);
     notifyListeners(); 
@@ -58,7 +64,7 @@ class NoteProvider extends ChangeNotifier {
         modifiedAt: DateTime.now(),
       );
       
-      await _noteRepository.saveNote(updatedNote);
+      await noteRepository.saveNote(updatedNote);
 
       _notes.removeAt(index);
       _notes.insert(0, updatedNote);
@@ -81,5 +87,31 @@ class NoteProvider extends ChangeNotifier {
       return titleLower.contains(lowerCaseQuery) ||
              contentLower.contains(lowerCaseQuery);
     }).toList();
+  }
+
+  String formatDateTime(DateTime dt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final noteDate = DateTime(dt.year, dt.month, dt.day);
+
+    if (today == noteDate) {
+      return DateFormat('HH:mm').format(dt);
+    } else {
+      return DateFormat('dd/MM/yyyy').format(dt);
+    }
+  }
+
+  String getPlainText(String jsonContent) {
+    if (jsonContent.isEmpty) {
+      return "Nội dung trống";
+    }
+    try {
+      final decoded = jsonDecode(jsonContent) as List;
+      final doc = Document.fromJson(decoded);
+      return doc.toPlainText().trim().replaceAll('\n', ' ');
+    } catch (e) {
+      print("Lỗi parse nội dung note: $e");
+      return "[Nội dung bị lỗi]";
+    }
   }
 }
