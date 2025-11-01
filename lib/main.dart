@@ -6,7 +6,7 @@ import 'package:note_taking_app/repositories/note_repository.dart';
 import 'package:note_taking_app/repositories/sqlite_note_repository.dart';
 import 'package:note_taking_app/repositories/web_note_repository.dart';
 import 'package:note_taking_app/screens/home.dart';
-import 'package:note_taking_app/screens/note_editor_rich.dart';
+import 'package:note_taking_app/screens/note_editor.dart';
 import 'package:note_taking_app/widgets/home/note_list.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -59,13 +59,12 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         FlutterQuillLocalizations.delegate,
       ],
-      initialRoute: '/', // Route mặc định routes:
+      initialRoute: '/',
       routes: { 
-        '/': (context) => HomeScreen(), 
+        '/': (context) => const HomeScreen(), 
         '/editor': (context) => NoteEditor(),
         },
       themeMode: themeProvider.themeMode,
-      home: const HomeScreen(),
     );
   }
 }
