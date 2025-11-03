@@ -6,14 +6,14 @@ import 'package:note_taking_app/providers/note_provider.dart';
 import 'package:note_taking_app/widgets/home/note_list_item.dart';
 import 'package:provider/provider.dart';
 
-class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
 
   @override
-  State<SearchPage> createState() => _SearchPageState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchPageState extends State<SearchPage> {
+class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
   List<Note> _searchResults = [];
 

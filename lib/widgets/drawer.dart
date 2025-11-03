@@ -7,6 +7,8 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -22,6 +24,17 @@ class AppDrawer extends StatelessWidget {
                 fontSize: 24,
               ),
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.list),
+            title: const Text('Todo'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(
+                context,
+                '/todo',
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.settings),

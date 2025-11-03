@@ -65,9 +65,9 @@ class _HomeScreenState extends State<HomeScreen>{
       actions: [
         IconButton(
           onPressed: () {
-            Navigator.push(
+            Navigator.pushNamed(
                 context,
-                MaterialPageRoute(builder: (context) => const SearchPage()),
+                '/search',
               );
           }, 
           icon: Icon(Icons.search, color: cs.onSurface)
@@ -89,89 +89,6 @@ class _HomeScreenState extends State<HomeScreen>{
       ],
     );
   }
-
-  // Widget _buildNoteList(BuildContext context, ColorScheme cs) {
-  //   final noteProvider = Provider.of<NoteProvider>(context);
-
-  //   if (noteProvider.isLoading) {
-  //     return Center(
-  //       child: CircularProgressIndicator(),
-  //     );
-  //   }
-
-  //   if (noteProvider.notes.isEmpty) {
-  //     // Trạng thái Rỗng
-  //     return Center(
-  //       child: Column(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: [
-  //           Icon(Icons.lightbulb_outline, size: 64, color: cs.onSurfaceVariant),
-  //           const SizedBox(height: 16),
-  //           Text(
-  //             "Ghi chú của bạn trống",
-  //             style: TextStyle(fontSize: 18, color: cs.onSurfaceVariant),
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   }
-
-  //   return ListView.builder(
-  //     padding: const EdgeInsets.symmetric(horizontal: 16), 
-  //     itemCount: noteProvider.notes.length,
-  //     itemBuilder: (context, index) {
-  //       final Note note = noteProvider.notes[index];
-  //       return Card(
-  //         margin: const EdgeInsets.symmetric(vertical: 8.0),
-  //         clipBehavior: Clip.antiAlias,
-  //         child: InkWell(
-  //           onTap: () {
-  //             Navigator.push(
-  //               context,
-  //               MaterialPageRoute(builder: (context) =>  NoteEditor(note: note)),
-  //             );
-  //           },
-  //           child: Padding(
-  //             padding: const EdgeInsets.all(16.0),
-  //             child: Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 Text(
-  //                   note.title.isEmpty ? "Không có tiêu đề" : note.title,
-  //                   style: tt.titleLarge,
-  //                   maxLines: 1,
-  //                   overflow: TextOverflow.ellipsis,
-  //                 ),
-  //                 const SizedBox(height: 8),
-  //                 Row(
-  //                   children: [
-  //                     Text(
-  //                       _formatDateTime(note.modifiedAt),
-  //                       style: tt.bodyMedium?.copyWith(
-  //                             color: cs.onSurfaceVariant,
-  //                           ),
-  //                     ),
-  //                     const SizedBox(width: 8),
-  //                     Expanded(
-  //                       child: Text(
-  //                         _getPlainText(note.content),
-  //                         style: tt.bodyMedium?.copyWith(
-  //                               color: cs.onSurfaceVariant,
-  //                             ),
-  //                         maxLines: 1,
-  //                         overflow: TextOverflow.ellipsis,
-  //                       )
-  //                     )
-  //                   ],
-  //                 )
-  //               ],
-  //             ),
-  //           ),
-  //         )
-  //       );
-  //     },
-  //   );
-  // }
 
   FloatingActionButton _buildFAB() {
     return FloatingActionButton.extended(

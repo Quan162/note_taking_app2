@@ -7,6 +7,8 @@ import 'package:note_taking_app/repositories/sqlite_note_repository.dart';
 import 'package:note_taking_app/repositories/web_note_repository.dart';
 import 'package:note_taking_app/screens/home.dart';
 import 'package:note_taking_app/screens/note_editor.dart';
+import 'package:note_taking_app/screens/search.dart';
+import 'package:note_taking_app/screens/setting.dart';
 import 'package:note_taking_app/screens/todo.dart';
 import 'package:note_taking_app/widgets/home/note_list.dart';
 import 'package:provider/provider.dart';
@@ -62,58 +64,13 @@ class MyApp extends StatelessWidget {
       ],
       initialRoute: '/',
       routes: { 
-        '/': (context) => const TodoScreen(), 
+        '/': (context) => HomeScreen(), 
         '/editor': (context) => NoteEditor(),
+        '/todo': (context) => TodoScreen(),
+        '/search': (context) => SearchScreen(),
+        '/settings': (context) => SettingScreen(),
         },
       themeMode: themeProvider.themeMode,
     );
   }
 }
-// final ThemeData lightTheme = ThemeData(
-//   brightness: Brightness.light,
-//   primaryColor: Colors.blue,
-//   appBarTheme: const AppBarTheme(
-//     backgroundColor: Colors.blue,
-//     foregroundColor: Colors.white,
-//   )
-// );
-
-// final ThemeData darkTheme = ThemeData(
-//   brightness: Brightness.dark,
-//   primaryColor: Colors.blueGrey,
-//   appBarTheme: const AppBarTheme(
-//     backgroundColor: Colors.blueGrey,
-//     foregroundColor: Colors.white,
-//   )
-// );
-
-// class MyApp extends StatefulWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   State<StatefulWidget> createState() => _MyAppState();
-// }
-
-// class _MyAppState extends State<MyApp> {
-//   bool _isDarkMode = false;
-
-//   void _changeTheme(bool isDarkMode) {
-//     setState(() {
-//       _isDarkMode = isDarkMode;
-//     });
-//   }
-  
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       // theme: lightTheme,
-//       // darkTheme: darkTheme,
-//       // themeMode: _isDarkMode == true ? ThemeMode.dark : ThemeMode.light,
-//       theme: ThemeData(
-//         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-//         useMaterial3: true
-//       ),
-//       home:  HomeScreen(),
-//     );
-//   }
-// }
