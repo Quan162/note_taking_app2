@@ -1,20 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:note_taking_app/providers/note_provider.dart';
 import 'package:note_taking_app/providers/theme_provider.dart';
 import 'package:note_taking_app/repositories/note_repository.dart';
 import 'package:note_taking_app/repositories/sqlite_note_repository.dart';
-import 'package:note_taking_app/repositories/web_note_repository.dart';
 import 'package:note_taking_app/screens/home.dart';
 import 'package:note_taking_app/screens/note_editor.dart';
 import 'package:note_taking_app/screens/search.dart';
 import 'package:note_taking_app/screens/setting.dart';
 import 'package:note_taking_app/screens/todo.dart';
-import 'package:note_taking_app/widgets/home/note_list.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,13 +27,14 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => NoteProvider(noteRepository: noteRepository), 
-        ),
-        ChangeNotifierProvider(
           create: (context) => ThemeProvider(), 
         ),
+        ChangeNotifierProvider(
+          create: (context) => NoteProvider(noteRepository: noteRepository), 
+        ),
+
         // ChangeNotifierProvider(
-        //   create: (context) => ThemeProvider(), 
+        //   create: (context) => Provider(), 
         // ),
       ],
       child: const MyApp(),
@@ -55,13 +50,9 @@ class MyApp extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
-      theme: themeProvider.currentTheme,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        FlutterQuillLocalizations.delegate,
-      ],
+      theme: themeProvider.lightTheme,
+      darkTheme: themeProvider.darkTheme,
+      themeMode: themeProvider.themeMode,
       initialRoute: '/',
       routes: { 
         '/': (context) => HomeScreen(), 
@@ -70,7 +61,6 @@ class MyApp extends StatelessWidget {
         '/search': (context) => SearchScreen(),
         '/settings': (context) => SettingScreen(),
         },
-      themeMode: themeProvider.themeMode,
     );
   }
 }
