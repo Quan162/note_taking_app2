@@ -92,7 +92,7 @@ class NoteListItem extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        noteProvider.getPlainText(note.content),
+                        note.content.isEmpty ? "Không có nội dung" : note.content,
                         style: tt.bodyMedium?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),

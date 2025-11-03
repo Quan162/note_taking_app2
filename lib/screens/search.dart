@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:note_taking_app/models/note.dart';
 import 'package:note_taking_app/providers/note_provider.dart';
+import 'package:note_taking_app/widgets/home/note_list_item.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
@@ -62,13 +63,11 @@ class _SearchPageState extends State<SearchPage> {
               ),
             )
           : ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
               itemCount: _searchResults.length,
               itemBuilder: (context, index) {
                 final note = _searchResults[index];
-                return ListTile(
-                  title: Text(note.title),
-                  subtitle: Text(note.content),
-                );
+                return NoteListItem(note: note);
               },
             ),
     );
